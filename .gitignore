@@ -1,0 +1,14 @@
+# Sistem file PHP dan konfigurasi lokal
+/vendor/
+node_modules/
+.env
+.DS_Store
+Thumbs.db
+
+# File editor
+.vscode/
+.idea/
+
+# Folder cache laragon, composer, dll
+cache/
+tmp/

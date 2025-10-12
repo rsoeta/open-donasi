@@ -9,6 +9,12 @@ if (!isset($_SESSION['admin'])) {
 
 $site_logo = get_setting('site_logo', 'assets/images/logo.png');
 $result = mysqli_query($conn, "SELECT * FROM donasi_post ORDER BY id DESC");
+
+// Ambil nilai saat ini
+$site_name = get_setting('site_name', 'Open Donasi');
+$current_contact = get_setting('site_contact', 'info@example.com');
+$site_logo = get_setting('site_logo', 'assets/images/logo.png');
+
 ?>
 
 <!DOCTYPE html>
@@ -17,10 +23,10 @@ $result = mysqli_query($conn, "SELECT * FROM donasi_post ORDER BY id DESC");
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Konfirmasi Donasi - Open Donasi</title>
+    <title>Konfirmasi Donasi - <?= htmlspecialchars($site_name) ?></title>
     <!-- Favicon (multi-browser support) -->
-    <link rel="icon" type="image/png" sizes="32x32" href="<?= BASE_URL ?>assets/images/logo.png">
-    <link rel="apple-touch-icon" href="<?= BASE_URL ?>assets/images/logo.png">
+    <link rel="icon" type="image/png" sizes="32x32" href=" <?= BASE_URL . htmlspecialchars($site_logo) ?>">
+    <link rel="apple-touch-icon" href="<?= BASE_URL . htmlspecialchars($site_logo) ?>">
     <meta name="theme-color" content="#2c7a7b">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">

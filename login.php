@@ -29,6 +29,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error = "Email atau password salah!";
     }
 }
+
+// Ambil nilai saat ini
+$current_name = get_setting('site_name', 'Open Donasi');
+$current_contact = get_setting('site_contact', 'info@example.com');
+$site_logo = get_setting('site_logo', 'assets/images/logo.png');
 ?>
 
 <!DOCTYPE html>
@@ -37,7 +42,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Admin - Open Donasi</title>
+    <title>Login Admin - <?= htmlspecialchars($current_name) ?></title>
+
+    <!-- Favicon (multi-browser support) -->
+    <link rel="icon" type="image/png" sizes="32x32" href=" <?= BASE_URL . htmlspecialchars($site_logo) ?>">
+    <link rel="apple-touch-icon" href="<?= BASE_URL . htmlspecialchars($site_logo) ?>">
+    <meta name="theme-color" content="#2c7a7b">
+
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/style.css">
     <style>
         .login-container {

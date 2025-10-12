@@ -13,6 +13,7 @@ $email = $_SESSION['admin'];
 $current_name = get_setting('site_name', 'Open Donasi');
 $current_contact = get_setting('site_contact', 'info@example.com');
 $site_logo = get_setting('site_logo', 'assets/images/logo.png');
+
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -21,11 +22,11 @@ $site_logo = get_setting('site_logo', 'assets/images/logo.png');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Admin - <?= htmlspecialchars($current_name) ?></title>
-    <!-- Favicon (multi-browser support) -->
-    <link rel="icon" type="image/png" sizes="32x32" href="<?= BASE_URL ?>assets/images/logo.png">
-    <link rel="apple-touch-icon" href="<?= BASE_URL ?>assets/images/logo.png">
-    <meta name="theme-color" content="#2c7a7b">
 
+    <!-- Favicon (multi-browser support) -->
+    <link rel="icon" type="image/png" sizes="32x32" href=" <?= BASE_URL . htmlspecialchars($site_logo) ?>">
+    <link rel="apple-touch-icon" href="<?= BASE_URL . htmlspecialchars($site_logo) ?>">
+    <meta name="theme-color" content="#2c7a7b">
 
     <!-- Sekarang BASE_URL aman dan pasti menunjuk ke root -->
     <!-- <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/style.css"> -->

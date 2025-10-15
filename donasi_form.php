@@ -21,9 +21,9 @@ $site_logo = get_setting('site_logo', 'assets/images/logo.png');
 
 // Ambil nomor rekening dari tabel settings
 $site_bank = get_setting('site_bank', 'BRI - 000000000000000'); // default jika kosong
-$bank_parts = explode('-', $site_bank);
-$bank_name = trim($bank_parts[0] ?? '');
-$bank_number = trim($bank_parts[1] ?? '');
+preg_match('/\d{6,}/', $site_bank, $matches);
+$bank_number = $matches[0] ?? '0000000000';
+$bank_name = trim(preg_replace('/[-–—]?\s*\d.*$/', '', $site_bank));
 
 include_once('includes/header.php');
 ?>

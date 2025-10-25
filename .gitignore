@@ -12,3 +12,4 @@ Thumbs.db
 # Folder cache laragon, composer, dll
 cache/
 tmp/
+.github/workflows/deploy.yml

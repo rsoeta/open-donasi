@@ -19,7 +19,6 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           source: "./"
           target: "/home/albc5351/public_html/peduli.albarokah.org"
-          rm: true
           exclude: |
             .git*
             .github*

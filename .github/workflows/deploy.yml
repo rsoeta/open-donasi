@@ -10,21 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📦 Checkout kode
-        uses: actions/checkout@v4
-
-      - name: 🔍 Tes koneksi SSH (opsional untuk debug)
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            echo "✅ SSH berhasil konek ke Rumahweb!"
-            pwd
-            ls -lah
-
       - name: 🚀 Upload file ke Rumahweb via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -35,3 +20,13 @@ jobs:
           source: "./"
           target: "/home/albc5351/public_html/peduli.albarokah.org"
           rm: true
+          exclude: |
+            .git*
+            .github*
+            .env*
+            node_modules*
+            vendor*
+            README.md
+            deploy.yml
+            *.log
+            *.bak

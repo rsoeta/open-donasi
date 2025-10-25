@@ -1,15 +1,55 @@
-# Sistem file PHP dan konfigurasi lokal
-/vendor/
-node_modules/
-.env
+# ===== GIT & GITHUB =====
+.git/
+.github/
+.gitignore
+
+# ===== SISTEM =====
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# File editor
+# ===== LINGKUNGAN / CONFIG =====
+.env
+.env.*
+*.bak
+*.tmp
+*.swp
+*.log
+
+# ===== EDITOR / IDE =====
 .vscode/
 .idea/
+*.code-workspace
 
-# Folder cache laragon, composer, dll
+# ===== DOKUMENTASI =====
+README.md
+LICENSE
+CHANGELOG.md
+*.txt
+
+# ===== CACHE / SEMENTARA =====
 cache/
 tmp/
-.github/workflows/deploy.yml
+temp/
+backup/
+logs/
+
+# ===== DEPLOYMENT =====
+deploy.yml
+*.sh
+
+# ===== TEST / DEV =====
+tests/
+test/
+__tests__/
+coverage/
+
+# ===== NODE / NPM (kalau ada asset frontend) =====
+node_modules/
+package.json
+package-lock.json
+
+# ===== COMPOSER (jika tidak digunakan di produksi) =====
+vendor/
+composer.json
+composer.lock

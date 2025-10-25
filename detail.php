@@ -51,7 +51,7 @@ include_once('includes/header.php');
         </div>
     <?php endif; ?>
 
-    <div style="line-height:1.8;color:#333;font-size:15px;">
+    <div class="article-body" style="line-height:1.8;color:#333;font-size:15px;">
         <?= $row['deskripsi'] ?>
     </div>
 

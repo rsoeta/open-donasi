@@ -92,6 +92,21 @@ nav a:hover { color: #205f5f; }
 .article-card h3 { font-size: 1.2em; color: #2c7a7b; margin-bottom: 8px; }
 .article-card p { font-size: 0.95em; color: #555; }
 
+.article-body img {
+  max-width: 100% !important;
+  height: auto !important;
+  display: block;
+  margin: 15px auto;
+  border-radius: 8px;
+}
+
+.article-body iframe {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 15px auto;
+}
+
 /* --- Tombol Global --- */
 .btn, .btn-add, .btn-edit, .btn-delete {
   border-radius: 6px;

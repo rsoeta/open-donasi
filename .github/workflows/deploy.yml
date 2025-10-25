@@ -3,13 +3,21 @@ name: 🚀 Deploy ke Rumahweb (peduli.albarokah.org)
 on:
   push:
     branches:
-      - main # Ganti kalau branch utama kamu bukan 'main'
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+      - name: 📦 Checkout kode
+        uses: actions/checkout@v4
+
+      - name: 🧾 List file yang akan diupload (debug)
+        run: |
+          echo "=== Daftar file di direktori kerja ==="
+          ls -R
+
       - name: 🚀 Upload file ke Rumahweb via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -19,6 +27,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           source: "./"
           target: "/home/albc5351/public_html/peduli.albarokah.org"
+          # jangan ada 'rm: true' lagi ya
           exclude: |
             .git*
             .github*

@@ -53,3 +53,6 @@ package-lock.json
 vendor/
 composer.json
 composer.lock
+
+# Jangan commit konfigurasi database
+includes/config.php

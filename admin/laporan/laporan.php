@@ -231,6 +231,81 @@ $site_logo = get_setting('site_logo', 'assets/images/logo.png');
                 </table>
             </div>
         </div>
+        <?php
+        // ========================================
+        // == TABEL DONATUR (DONASI TRANSAKSI)   ==
+        // ========================================
+
+        // Query daftar donatur (mengikuti filter tanggal)
+        $filterDonatur = '';
+        if (!empty($startDate) && !empty($endDate)) {
+            $start = date('Y-m-d', strtotime($startDate));
+            $end   = date('Y-m-d', strtotime($endDate));
+            $filterDonatur = "WHERE tanggal_transaksi BETWEEN '$start' AND '$end'";
+        }
+
+        $donaturQuery = mysqli_query($conn, "
+    SELECT 
+        t.id,
+        t.nama_donatur,
+        t.jumlah,
+        t.metode,
+        t.tanggal_transaksi,
+        p.judul AS nama_program
+    FROM donasi_transaksi t
+    LEFT JOIN donasi_post p ON p.id = t.id_donasi
+    $filterDonatur
+    ORDER BY t.tanggal_transaksi DESC
+");
+        ?>
+        <br>
+
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <span>📋 Tabel Donatur</span>
+                <div>
+                    <a href="donatur_export_excel.php?<?= http_build_query($_GET) ?>"
+                        style="background:#2563eb;color:white;padding:6px 12px;border-radius:6px;text-decoration:none;">
+                        📊 Ekspor Excel Donatur
+                    </a>
+
+                    <a href="donatur_export_pdf.php?<?= http_build_query($_GET) ?>"
+                        style="background:#dc2626;color:white;padding:6px 12px;border-radius:6px;text-decoration:none;">
+                        📄 Ekspor PDF Donatur
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <table id="donaturTable" class="table table-striped table-bordered nowrap" style="width:100%">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>No</th>
+                            <th>Tanggal</th>
+                            <th>Nama Donatur</th>
+                            <th>Program</th>
+                            <th>Nominal</th>
+                            <th>Metode</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        $no = 1;
+                        while ($d = mysqli_fetch_assoc($donaturQuery)): ?>
+                            <tr>
+                                <td><?= $no++ ?></td>
+                                <td><?= date('d M Y H:i', strtotime($d['tanggal_transaksi'])) ?></td>
+                                <td><?= htmlspecialchars($d['nama_donatur']) ?></td>
+                                <td><?= htmlspecialchars($d['nama_program']) ?></td>
+                                <td><strong><?= number_format($d['jumlah'], 0, ',', '.') ?></strong></td>
+                                <td><span class="badge bg-info"><?= htmlspecialchars($d['metode']) ?></span></td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
     <!-- JS -->
@@ -243,6 +318,8 @@ $site_logo = get_setting('site_logo', 'assets/images/logo.png');
 
     <script>
         $(document).ready(function() {
+
+            // === Tabel Laporan Donasi ===
             $('#laporanTable').DataTable({
                 responsive: true,
                 paging: true,
@@ -253,6 +330,19 @@ $site_logo = get_setting('site_logo', 'assets/images/logo.png');
                     url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
                 }
             });
+
+            // === Tabel Donatur ===
+            $('#donaturTable').DataTable({
+                responsive: true,
+                paging: true,
+                searching: true,
+                ordering: true,
+                pageLength: 10,
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
+                }
+            });
+
         });
 
         // === Grafik Donasi ===

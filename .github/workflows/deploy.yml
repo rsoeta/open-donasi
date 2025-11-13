@@ -38,3 +38,4 @@ jobs:
             deploy.yml
             *.log
             *.bak
+            includes/config.php

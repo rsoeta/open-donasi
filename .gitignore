@@ -53,6 +53,10 @@ package-lock.json
 vendor/
 composer.json
 composer.lock
+vendor.zip
+uploads/
+assets/images/logo_*.jpg
+
 
 # Jangan commit konfigurasi database
 includes/config.php

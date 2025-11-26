@@ -7,6 +7,21 @@ if (!function_exists('get_setting')) {
 $site_name = get_setting('site_name', 'Open Donasi');
 $site_contact = get_setting('site_contact', 'info@example.com');
 $site_logo = get_setting('site_logo', 'assets/images/logo.png');
+
+// Detect Preview Image Automatically
+function get_meta_image()
+{
+    global $row; // digunakan di detail.php
+
+    // Jika halaman detail dan ada gambar
+    if (isset($row['gambar']) && !empty($row['gambar'])) {
+        return BASE_URL . "uploads/" . $row['gambar'];
+    }
+
+    // Default logo situs
+    $logo = get_setting('site_logo', 'assets/images/logo.png');
+    return BASE_URL . $logo;
+}
 ?>
 
 <!DOCTYPE html>
@@ -16,7 +31,21 @@ $site_logo = get_setting('site_logo', 'assets/images/logo.png');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($site_name) ?></title>
+    <!-- Open Graph (Facebook, WhatsApp, Instagram) -->
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="<?= htmlspecialchars($page_title ?? $site_name) ?>">
+    <meta property="og:description" content="<?= htmlspecialchars($page_desc ?? 'Program Donasi') ?>">
+    <meta property="og:image" content="<?= get_meta_image() ?>">
+    <meta property="og:url" content="<?= BASE_URL . ($_SERVER['REQUEST_URI'] ?? '') ?>">
+    <meta property="og:site_name" content="<?= htmlspecialchars($site_name) ?>">
 
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?= htmlspecialchars($page_title ?? $site_name) ?>">
+    <meta name="twitter:description" content="<?= htmlspecialchars($page_desc ?? 'Program Donasi') ?>">
+    <meta name="twitter:image" content="<?= get_meta_image() ?>">
+
+    <meta property="og:image" content="<?= get_meta_image() . '?v=' . time() ?>">
 
     <!-- Favicon (multi-browser support) -->
     <link rel="icon" type="image/png" sizes="32x32" href=" <?= BASE_URL . htmlspecialchars($site_logo) ?>">

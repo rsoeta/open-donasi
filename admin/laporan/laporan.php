@@ -245,18 +245,18 @@ $site_logo = get_setting('site_logo', 'assets/images/logo.png');
         }
 
         $donaturQuery = mysqli_query($conn, "
-    SELECT 
-        t.id,
-        t.nama_donatur,
-        t.jumlah,
-        t.metode,
-        t.tanggal_transaksi,
-        p.judul AS nama_program
-    FROM donasi_transaksi t
-    LEFT JOIN donasi_post p ON p.id = t.id_donasi
-    $filterDonatur
-    ORDER BY t.tanggal_transaksi DESC
-");
+                SELECT 
+                    t.id,
+                    t.nama_donatur,
+                    t.jumlah,
+                    t.metode,
+                    t.tanggal_transaksi,
+                    p.judul AS nama_program
+                FROM donasi_transaksi t
+                LEFT JOIN donasi_post p ON p.id = t.id_donasi
+                $filterDonatur
+                ORDER BY t.tanggal_transaksi ASC
+            ");
         ?>
         <br>
 
@@ -279,6 +279,9 @@ $site_logo = get_setting('site_logo', 'assets/images/logo.png');
             <div class="card-body">
                 <table id="donaturTable" class="table table-striped table-bordered nowrap" style="width:100%">
                     <thead class="table-primary">
+                        <?php
+
+                        ?>
                         <tr>
                             <th>No</th>
                             <th>Tanggal</th>
@@ -286,12 +289,51 @@ $site_logo = get_setting('site_logo', 'assets/images/logo.png');
                             <th>Program</th>
                             <th>Nominal</th>
                             <th>Metode</th>
+                            <th>Barang</th> <!-- NEW -->
+                            <th>Nilai Barang</th>
+                            <th>Total Donasi</th>
+
                         </tr>
                     </thead>
+
                     <tbody>
                         <?php
                         $no = 1;
-                        while ($d = mysqli_fetch_assoc($donaturQuery)): ?>
+                        while ($d = mysqli_fetch_assoc($donaturQuery)):
+
+                            // === Ambil barang (jika ada) ===
+                            $barangList = '-';
+
+                            $bq = mysqli_query($conn, "
+                                SELECT di.qty, i.name
+                                FROM donation_items di
+                                JOIN donasi_items i ON di.item_id = i.id
+                                WHERE di.donation_id = {$d['id']}
+                            ");
+
+                            if (mysqli_num_rows($bq) > 0) {
+                                $items = [];
+                                while ($r = mysqli_fetch_assoc($bq)) {
+                                    $items[] = $r['qty'] . '× ' . $r['name'];
+                                }
+                                $barangList = implode(', ', $items);
+                            }
+
+                            $nilai_barang = 0;
+                            $bq = mysqli_query($conn, "
+                                SELECT di.qty, i.harga_per_unit
+                                FROM donation_items di
+                                JOIN donasi_items i ON di.item_id = i.id
+                                WHERE di.donation_id = {$d['id']}
+                            ");
+
+                            while ($r = mysqli_fetch_assoc($bq)) {
+                                $nilai_barang += $r['qty'] * $r['harga_per_unit'];
+                            }
+
+                            $total_donasi = $nilai_barang + $d['jumlah'];
+
+                        ?>
                             <tr>
                                 <td><?= $no++ ?></td>
                                 <td><?= date('d M Y H:i', strtotime($d['tanggal_transaksi'])) ?></td>
@@ -299,9 +341,13 @@ $site_logo = get_setting('site_logo', 'assets/images/logo.png');
                                 <td><?= htmlspecialchars($d['nama_program']) ?></td>
                                 <td><strong><?= number_format($d['jumlah'], 0, ',', '.') ?></strong></td>
                                 <td><span class="badge bg-info"><?= htmlspecialchars($d['metode']) ?></span></td>
+                                <td><?= htmlspecialchars($barangList) ?></td> <!-- NEW -->
+                                <td>Rp <?= number_format($nilai_barang, 0, ',', '.') ?></td>
+                                <td><strong>Rp <?= number_format($total_donasi, 0, ',', '.') ?></strong></td>
                             </tr>
                         <?php endwhile; ?>
                     </tbody>
+
                 </table>
             </div>
         </div>

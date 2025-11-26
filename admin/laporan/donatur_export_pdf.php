@@ -73,6 +73,7 @@ if ($logo_file && file_exists($logo_file)) {
 // ====================================
 $q = mysqli_query($conn, "
     SELECT 
+        t.id,
         t.nama_donatur,
         t.jumlah,
         t.metode,
@@ -81,7 +82,7 @@ $q = mysqli_query($conn, "
     FROM donasi_transaksi t
     LEFT JOIN donasi_post p ON p.id = t.id_donasi
     $where
-    ORDER BY t.tanggal_transaksi DESC
+    ORDER BY t.tanggal_transaksi ASC
 ");
 
 // === Hitung total ===
@@ -136,6 +137,8 @@ $html .= '</div>
     <th>Program</th>
     <th>Nominal</th>
     <th>Metode</th>
+    <th>Nilai Barang</th>
+    <th>Total Donasi</th>
 </tr>
 </thead>
 <tbody>
@@ -143,6 +146,21 @@ $html .= '</div>
 
 $no = 1;
 foreach ($rows as $r) {
+    $bq = mysqli_query($conn, "
+        SELECT di.qty, i.harga_per_unit
+        FROM donation_items di
+        JOIN donasi_items i ON di.item_id = i.id
+        WHERE di.donation_id = {$r['id']}
+    ");
+
+    $nilai_barang = 0;
+
+    while ($x = mysqli_fetch_assoc($bq)) {
+        $nilai_barang += $x['qty'] * $x['harga_per_unit'];
+    }
+
+    $total_donasi = $nilai_barang + $r['jumlah'];
+
     $html .= '
 <tr>
     <td class="center">' . $no++ . '</td>
@@ -151,17 +169,37 @@ foreach ($rows as $r) {
     <td>' . htmlspecialchars($r['program']) . '</td>
     <td class="right">Rp ' . number_format($r['jumlah'], 0, ',', '.') . '</td>
     <td>' . htmlspecialchars($r['metode']) . '</td>
+    <td class="right">Rp ' . number_format($nilai_barang, 0, ',', '.') . '</td>
+    <td class="right">Rp ' . number_format($total_donasi, 0, ',', '.') . '</td>
 </tr>';
 }
 
 // === Baris TOTAL ===
+// Hitung total nilai barang & total donasi
+$total_barang = 0;
+foreach ($rows as $r) {
+    $bq = mysqli_query($conn, "
+        SELECT di.qty, i.harga_per_unit
+        FROM donation_items di
+        JOIN donasi_items i ON di.item_id = i.id
+        WHERE di.donation_id = {$r['id']}
+    ");
+    while ($x = mysqli_fetch_assoc($bq)) {
+        $total_barang += $x['qty'] * $x['harga_per_unit'];
+    }
+}
+
+$total_semua = $total_nominal + $total_barang;
+
+// FOOTER TOTAL
 $html .= '
-<tr style="background:#e2e8f0;font-weight:bold;">
+<tr style="background:#e2e8f0; font-weight:bold;">
     <td colspan="4" class="right">TOTAL</td>
     <td class="right">Rp ' . number_format($total_nominal, 0, ',', '.') . '</td>
     <td class="center">' . $total_donatur . ' Donatur</td>
-</tr>
-';
+    <td class="right">Rp ' . number_format($total_barang, 0, ',', '.') . '</td>
+    <td class="right">Rp ' . number_format($total_semua, 0, ',', '.') . '</td>
+</tr>';
 
 $html .= '
 </tbody>

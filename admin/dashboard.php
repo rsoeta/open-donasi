@@ -120,6 +120,7 @@ $site_logo = get_setting('site_logo', 'assets/images/logo.png');
             $pending_count = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS jml FROM donasi_pending WHERE status='menunggu'"))['jml'];
             ?>
             <div class="menu-card">
+                <!-- Data Donasi -->
                 <h3>Data Donasi</h3>
                 <p>Kelola daftar donasi.</p>
                 <a href="<?= BASE_URL ?>admin/donasi/donasi.php">Buka</a>
@@ -129,6 +130,7 @@ $site_logo = get_setting('site_logo', 'assets/images/logo.png');
                 </a>
             </div>
 
+            <!-- Laporan -->
             <div class="menu-card">
                 <h3>Laporan</h3>
                 <p>Lihat rekap data dan statistik donasi.</p>
@@ -140,11 +142,27 @@ $site_logo = get_setting('site_logo', 'assets/images/logo.png');
                 </a>
             </div>
 
+            <!-- Kelola harga barang -->
+            <div class="menu-card">
+                <h3>Kelola Harga Barang</h3>
+                <p>Atur harga per unit barang donasi.</p>
+                <a href="<?= BASE_URL ?>admin/donasi/items.php">Kelola Barang</a>
+            </div>
+
+            <!-- Pengaturan Umum -->
             <div class="menu-card">
                 <h3>Pengaturan</h3>
                 <p>Ubah informasi admin.</p>
                 <a href="<?= BASE_URL ?>admin/pengaturan/pengaturan.php">Buka</a>
             </div>
+
+            <!-- 🔥 Pengaturan WhatsApp (alatwa) -->
+            <!-- <div class="menu-card">
+                <h3>WhatsApp Gateway</h3>
+                <p>Atur API Key, Device ID, dan nomor admin untuk notifikasi.</p>
+                <a href="<?= BASE_URL ?>admin/settings/whatsapp_settings.php">Pengaturan WA</a>
+            </div> -->
+
         </div>
     </div>
 

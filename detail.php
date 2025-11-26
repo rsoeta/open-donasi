@@ -21,6 +21,9 @@ if (!$query || mysqli_num_rows($query) == 0) {
 
 // Ambil data
 $row = mysqli_fetch_assoc($query);
+$page_title = $row['judul'];
+$page_desc  = strip_tags(substr($row['deskripsi'], 0, 150));
+
 $site_name = get_setting('site_name', 'Open Donasi');
 $site_logo = get_setting('site_logo', 'assets/images/logo.png');
 date_default_timezone_set('Asia/Jakarta');

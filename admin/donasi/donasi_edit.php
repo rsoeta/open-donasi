@@ -1,13 +1,6 @@
 <?php
 include_once('../../includes/config.php');
 session_start();
-
-// Ambil nilai saat ini
-$current_name = get_setting('site_name', 'Open Donasi');
-$current_contact = get_setting('site_contact', 'info@example.com');
-$site_logo = get_setting('site_logo', 'assets/images/logo.png');
-
-
 if (!isset($_SESSION['admin'])) {
     header('Location: ../../login.php');
     exit;
@@ -16,8 +9,22 @@ if (!isset($_SESSION['admin'])) {
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $result = mysqli_query($conn, "SELECT * FROM donasi_post WHERE id = $id");
 $row = mysqli_fetch_assoc($result);
-?>
 
+if (!$row) {
+    header("Location: donasi.php");
+    exit;
+}
+
+// ambil items terkait
+$items = [];
+$resItems = mysqli_query($conn, "SELECT * FROM donasi_items 
+WHERE donasi_post_id = $id AND is_active = 1
+ORDER BY id ASC
+");
+while ($r = mysqli_fetch_assoc($resItems)) $items[] = $r;
+
+$site_logo = get_setting('site_logo', 'assets/images/logo.png');
+?>
 <!DOCTYPE html>
 <html lang="id">
 
@@ -111,55 +118,26 @@ $row = mysqli_fetch_assoc($result);
             font-size: 13px;
         }
     </style>
-    <!-- TinyMCE Editor -->
+    <style>
+        .items-list table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .items-list td,
+        .items-list th {
+            padding: 8px;
+            border: 1px solid #eee;
+        }
+    </style>
     <script src="../../assets/js/tinymce/tinymce.min.js"></script>
     <script>
         tinymce.init({
             selector: '#deskripsi',
-            height: 400,
+            height: 300,
             menubar: false,
-            branding: false,
-            plugins: 'lists link image table code',
-            toolbar: 'undo redo | bold italic underline | alignleft aligncenter alignright | bullist numlist | link image table | code',
-
-            /* -------------------- */
-            /* KONFIGURASI UPLOAD GAMBAR */
-            /* -------------------- */
-            images_upload_url: 'upload_image.php',
-
-            automatic_uploads: true,
-            file_picker_types: 'image',
-
-            file_picker_callback: function(callback, value, meta) {
-                if (meta.filetype === 'image') {
-                    var input = document.createElement('input');
-                    input.setAttribute('type', 'file');
-                    input.setAttribute('accept', 'image/*');
-
-                    input.onchange = function() {
-                        var file = this.files[0];
-                        var formData = new FormData();
-                        formData.append('file', file);
-
-                        fetch('upload_image.php', {
-                                method: 'POST',
-                                body: formData
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data && data.location) {
-                                    callback(data.location, {
-                                        alt: file.name
-                                    });
-                                } else {
-                                    alert('Upload gagal: ' + (data.error || 'Unknown error'));
-                                }
-                            })
-                            .catch(err => alert('Gagal mengupload gambar: ' + err));
-                    };
-                    input.click();
-                }
-            }
+            plugins: 'lists link image table',
+            toolbar: 'bold italic | bullist numlist | link image table'
         });
     </script>
 </head>
@@ -167,25 +145,20 @@ $row = mysqli_fetch_assoc($result);
 <body>
     <header>
         <div class="container" style="display:flex;justify-content:space-between;align-items:center;">
-            <div class="logo">
-                <a href="/"><img src="<?= BASE_URL . htmlspecialchars($site_logo) ?>" alt="<?= htmlspecialchars($site_name) ?>" height="40"></a>
-            </div>
-            <nav>
-                <a href="<?= BASE_URL ?>admin/dashboard.php">Dashboard</a> |
-                <a href="<?= BASE_URL ?>logout.php">Logout</a>
-            </nav>
+            <div class="logo"><a href="/"><img src="<?= BASE_URL . htmlspecialchars($site_logo) ?>" height="40"></a></div>
+            <nav><a href="<?= BASE_URL ?>admin/dashboard.php">Dashboard</a> | <a href="<?= BASE_URL ?>logout.php">Logout</a></nav>
         </div>
     </header>
 
     <div class="container">
         <h2>Edit Artikel Donasi</h2>
-        <form action="donasi_update.php" method="POST" enctype="multipart/form-data">
+        <form action="donasi_update.php" method="POST" enctype="multipart/form-data" id="formEdit">
             <input type="hidden" name="id" value="<?= $row['id'] ?>">
 
             <label>Judul</label>
             <input type="text" name="judul" value="<?= htmlspecialchars($row['judul']) ?>" required>
 
-            <label for="gambar">Gambar Utama</label>
+            <label>Gambar Utama</label>
             <?php if (!empty($row['gambar'])): ?>
                 <img src="../../uploads/<?= $row['gambar'] ?>" alt="Gambar Utama" style="width:200px;display:block;margin-bottom:10px;border-radius:6px;">
             <?php endif; ?>
@@ -194,21 +167,108 @@ $row = mysqli_fetch_assoc($result);
             <label>Deskripsi</label>
             <textarea id="deskripsi" name="deskripsi"><?= htmlspecialchars($row['deskripsi']) ?></textarea>
 
+            <label>Target Donasi (Rp)</label>
+            <input type="text" id="target_donasi" name="target_donasi" value="<?= number_format($row['target_donasi'], 0, ',', '.') ?>" oninput="formatRibuan(this)" required>
+
+            <label>Status</label>
+            <select name="status">
+                <option value="aktif" <?= $row['status'] == 'aktif' ? 'selected' : '' ?>>Aktif</option>
+                <option value="ditutup" <?= $row['status'] == 'ditutup' ? 'selected' : '' ?>>Ditutup</option>
+            </select>
+
+            <label><input type="checkbox" id="accepts_goods" name="accepts_goods" <?= $row['accepts_goods'] ? 'checked' : '' ?>> Program menerima donasi barang</label>
+
+            <div id="goods_area" style="display:<?= $row['accepts_goods'] ? 'block' : 'none' ?>; margin-top:10px;">
+                <label>Catatan Barang (instruksi untuk donor)</label>
+                <textarea name="goods_note" rows="3"><?= htmlspecialchars($row['goods_note']) ?></textarea>
+
+                <hr>
+                <h4>Daftar Barang (Admin)</h4>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <input type="text" id="new_item_name" placeholder="Nama barang (mis: Beras)">
+                    <input type="text" id="new_item_unit" placeholder="Unit (pcs/kg)" style="width:120px">
+                    <button type="button" onclick="addItem()">Tambah</button>
+                </div>
+
+                <div class="items-list" id="items_list"></div>
+                <input type="hidden" name="items_json" id="items_json">
+                <p class="small">Perubahan daftar barang akan menggantikan daftar sebelumnya.</p>
+            </div>
+
             <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
                 <button type="submit" class="btn-submit">Simpan Perubahan</button>
-                <a href="donasi.php" class="btn-back" style="margin:0">Batal</a>
+                <a href="donasi.php" class="btn-back">Batal</a>
             </div>
         </form>
     </div>
+
     <script>
-        tinymce.init({
-            selector: '#deskripsi',
-            height: 400,
-            menubar: false,
-            branding: false,
-            plugins: 'lists link image table code',
-            toolbar: 'undo redo | bold italic underline | alignleft aligncenter alignright | bullist numlist | link image table | code',
-            images_upload_url: 'upload_image.php',
+        function formatRibuan(input) {
+            let angka = input.value.replace(/\D/g, '');
+            input.value = angka.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        let items = <?= json_encode($items) ?>.map(it => ({
+            name: it.name,
+            unit: it.unit
+        }));
+
+        function renderItems() {
+            const wrap = document.getElementById('items_list');
+            if (!items.length) {
+                wrap.innerHTML = '<em>Belum ada barang. Tambahkan di atas.</em>';
+            } else {
+                let html = '<table><thead><tr><th>Nama</th><th>Unit</th><th>Aksi</th></tr></thead><tbody>';
+                items.forEach((it, idx) => html += `<tr><td>${escapeHtml(it.name)}</td><td>${escapeHtml(it.unit)}</td><td><button type="button" onclick="removeItem(${idx})">Hapus</button></td></tr>`);
+                html += '</tbody></table>';
+                wrap.innerHTML = html;
+            }
+            document.getElementById('items_json').value = JSON.stringify(items);
+        }
+
+        function addItem() {
+            const name = document.getElementById('new_item_name').value.trim();
+            const unit = document.getElementById('new_item_unit').value.trim() || 'pcs';
+            if (!name) {
+                alert('Nama barang wajib');
+                return;
+            }
+            items.push({
+                name,
+                unit
+            });
+            document.getElementById('new_item_name').value = '';
+            document.getElementById('new_item_unit').value = '';
+            renderItems();
+        }
+
+        function removeItem(idx) {
+            if (!confirm('Hapus item?')) return;
+            items.splice(idx, 1);
+            renderItems();
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/[&<>"']/g, function(m) {
+                return ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                })[m];
+            });
+        }
+
+        document.getElementById('accepts_goods').addEventListener('change', function() {
+            document.getElementById('goods_area').style.display = this.checked ? 'block' : 'none';
+        });
+        renderItems();
+
+        // format target sebelum submit
+        document.getElementById('formEdit').addEventListener('submit', function() {
+            const t = document.getElementById('target_donasi');
+            if (t) t.value = t.value.replace(/\./g, '');
         });
     </script>
 </body>
